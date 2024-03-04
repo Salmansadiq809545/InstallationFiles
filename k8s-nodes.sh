@@ -21,6 +21,6 @@ sudo systemctl restart cri-docker.service
 ## Install kuubernetes
 
 
-wget https://raw.githubusercontent.com/Salmansadiq809545/InstallationFiles/master/node.sh
-sudo chmod +x kubenodeinstallation
-sudo ./kubenodeinstallation
+wget https://raw.githubusercontent.com/Salmansadiq809545/InstallationFiles/master/node.sh -P /tmp
+sudo chmod 755 /tmp/node.sh
+sudo bash /tmp/node.sh
