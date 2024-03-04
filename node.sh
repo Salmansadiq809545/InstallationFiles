@@ -1,75 +1,78 @@
 #!/bin/bash
 
 install_ubuntu() {
-    sudo apt-get update
-    sudo apt-get install -y apt-transport-https ca-certificates curl
-    echo "Starting the installation of Kubernetes components (kubeadm, kubelet, kubectl) ..."
-    sudo curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo gpg --dearmor -o /usr/share/keyrings/kubernetes-archive-keyring.gpg
-    echo "deb [signed-by=/usr/share/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee /etc/apt/sources.list.d/kubernetes.list
-    sudo apt-get update
-    sudo apt-get install -y kubelet=1.23.10-00 kubeadm=1.23.10-00 kubectl=1.23.10-00
 
-    if [ $? -eq 0 ]; then
-        echo "kubelet, kubeadm & kubectl are successfully installed"
-        sudo apt-mark hold kubelet kubeadm kubectl
-    else
-        echo "Error: Issue in installing kubelet, kubeadm & kubectl - process abort"
-        exit 2
-    fi
+   #### Install Kubernetes latest components
+   sudo apt-get update
+   sudo apt-get install -y apt-transport-https ca-certificates curl
+   echo "Starting the installation of k8s components (kubeadm, kubelet, kubectl) ..."
+   sudo curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
+   echo "deb https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee /etc/apt/sources.list.d/kubernetes.list
+   sudo apt-get update
+   sudo apt-get install -y kubelet kubeadm kubectl
+   
+   if [ $? -eq 0 ]; then
+      echo "kubelet, kubeadm & kubectl are successfully installed"
+      sudo apt-mark hold kubelet kubeadm kubectl
+   else
+      echo "Issue in installing kubelet, kubeadm & kubectl - process abort"
+      exit 2
+   fi
 }
 
 install_centos() {
-    sudo tee /etc/yum.repos.d/kubernetes.repo <<EOF
+
+cat <<EOF | sudo tee /etc/yum.repos.d/kubernetes.repo
 [kubernetes]
 name=Kubernetes
 baseurl=https://packages.cloud.google.com/yum/repos/kubernetes-el7-\$basearch
 enabled=1
 gpgcheck=1
+repo_gpgcheck=1
 gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
 exclude=kubelet kubeadm kubectl
 EOF
+  
+sudo setenforce 0
+sudo sed -i 's/^SELINUX=enforcing$/SELINUX=permissive/' /etc/selinux/config
+sudo yum install -y kubelet-1.23.10-0 kubeadm-1.23.10-0 kubectl-1.23.10-0 --disableexcludes=kubernetes
+sudo systemctl enable --now kubelet
 
-    sudo setenforce 0
-    sudo sed -i 's/^SELINUX=enforcing$/SELINUX=permissive/' /etc/selinux/config
-    sudo yum install -y kubelet-1.23.10-0 kubeadm-1.23.10-0 kubectl-1.23.10-0 --disableexcludes=kubernetes
-    sudo systemctl enable --now kubelet
 }
 
 install_amzn() {
-    # Similar to CentOS installation
-    # Modify according to Amazon Linux specifics
-    echo "Installation for Amazon Linux is not implemented yet"
-    exit 1
+
+cat <<EOF | sudo tee /etc/yum.repos.d/kubernetes.repo
+[kubernetes]
+name=Kubernetes
+baseurl=https://packages.cloud.google.com/yum/repos/kubernetes-el7-\$basearch
+enabled=1
+gpgcheck=1
+repo_gpgcheck=1
+gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
+exclude=kubelet kubeadm kubectl
+EOF
+  
+sudo setenforce 0
+sudo sed -i 's/^SELINUX=enforcing$/SELINUX=permissive/' /etc/selinux/config
+sudo yum install -y kubelet-1.23.10-0 kubeadm-1.23.10-0 kubectl-1.23.10-0 --disableexcludes=kubernetes
+sudo systemctl enable --now kubelet
+
 }
+################ MAIN ###################
 
-# Main installation function
-install_kubernetes() {
-    if [ -f /etc/os-release ]; then
-        osname=$(grep ID /etc/os-release | egrep -v 'VERSION|LIKE|VARIANT|PLATFORM' | cut -d'=' -f2 | sed -e 's/"//' -e 's/"//')
-        echo "Detected OS: $osname"
-
-        case "$osname" in
-            "ubuntu")
-                install_ubuntu
-                ;;
-            "amzn")
-                install_amzn
-                ;;
-            "centos")
-                install_centos
-                ;;
-            *)
-                echo "Unsupported OS: $osname"
-                exit 3
-                ;;
-        esac
-    else
-        echo "Error: Cannot locate /etc/os-release - unable to find the OS name"
-        exit 4
-    fi
-}
-
-# Execute the installation function
-install_kubernetes
-
+if [ -f /etc/os-release ]; then
+   osname=$(grep ID /etc/os-release | grep -v "VERSION" | cut -d'=' -f2 | tr -d '"')
+   echo $osname
+   if [ $osname == "ubuntu" ]; then
+       install_ubuntu
+   elif [ $osname == "amzn" ]; then
+       install_amzn
+   elif [ $osname == "centos" ]; then
+       install_centos
+  fi
+else
+   echo "Cannot locate /etc/os-release - unable to find the OS name"
+   exit 8
+fi
 exit 0
