@@ -1,6 +1,6 @@
 In Master machine: 
 
-wget https://raw.githubusercontent.com/akshu20791/Deployment-script/main/k8s-master.sh
+wget https://github.com/Salmansadiq809545/InstallationFiles/blob/master/k8s-master.sh
 ls -l
 ls
 chmod 777 k8s-master.sh
