@@ -20,7 +20,7 @@ sudo systemctl restart cri-docker.service
 
 ## Install kuubernetes
 
-
-# wget https://raw.githubusercontent.com/Salmansadiq809545/InstallationFiles/master/node.sh -P /tmp
-# sudo chmod 755 /tmp/node.sh
-# sudo bash /tmp/node.sh
+## Install kubeadm,kubelet,kubectl
+sudo wget https://raw.githubusercontent.com/lerndevops/labs/master/scripts/installK8S.sh -P /tmp
+sudo chmod 755 /tmp/installK8S.sh
+sudo bash /tmp/installK8S.sh
