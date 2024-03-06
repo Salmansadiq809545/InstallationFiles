@@ -26,6 +26,8 @@ After k8s installation is done . we need to connect nodes with the master via to
 
 kubeadm token create --print-join-command 
 
+## Add --cri-socket unix:///var/run/cri-dockerd.sock before tocker
+
 ## whatever token comes up ...copy the token and paste it in notepad and after that in the command you will see 6443 written ...after that paste --cri-socket unix:///var/run/cri-dockerd.sock
 
 
